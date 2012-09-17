@@ -13,7 +13,6 @@ public class ForeignObjectSet<T extends Model> extends QuerySet<T> {
 		
 		whereClause.add("`" + getTableName(modelClass) + "`." + getTableName(object.getClass()) + "_id=?");
 		whereParameters.add(object.get("id"));
-		System.out.println("foreign object :" + object);
 	}
 
 	public T create(Entry<String, Object>... entries) {
@@ -23,7 +22,6 @@ public class ForeignObjectSet<T extends Model> extends QuerySet<T> {
 			for (Entry<String, Object> entry : entries) {
 				object.set(entry.getKey(), entry.getValue());
 			}
-			System.out.println("set foreign:" + foreignObject.getClass().getSimpleName().toLowerCase() + "=" + foreignObject);
 			object.set(foreignObject.getClass().getSimpleName().toLowerCase(), foreignObject);
 			manager.insertModel(object);
 			return object;

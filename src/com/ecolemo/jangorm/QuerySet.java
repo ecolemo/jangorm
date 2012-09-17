@@ -245,10 +245,10 @@ public class QuerySet<T extends Model> implements Iterable<T> {
 			buffer.delete(buffer.length() - 4, buffer.length() - 1);
 		}
 		System.out.println(buffer.toString());
-		System.out.println(whereParameters);
+		System.out.println("params:" + whereParameters);
 		
 		int rows = manager.executeUpdate(buffer.toString(), whereParameters.toArray());
-		System.out.println(rows);
+		System.out.println("rows:" + rows);
 		
 	}
 	
