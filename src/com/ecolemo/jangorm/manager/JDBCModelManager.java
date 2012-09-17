@@ -27,7 +27,8 @@ public class JDBCModelManager extends ModelManager {
 	protected String url;
 	private SqliteDatabaseType databaseType;
 
-	public <T extends Model> void insertModel(T model) {
+    @SuppressWarnings("unchecked")
+    public <T extends Model> void insertModel(T model) {
 		try {
 			Dao<T, Integer> dao = DaoManager.createDao(getConnectionSource(), model.getClass());
 			dao.create(model);
@@ -37,7 +38,8 @@ public class JDBCModelManager extends ModelManager {
 		}
 	}
 
-	public <T extends Model> void updateModel(T model) {
+    @SuppressWarnings("unchecked")
+    public <T extends Model> void updateModel(T model) {
 		try {
 			Dao<T, Integer> dao = DaoManager.createDao(getConnectionSource(), model.getClass());
 			dao.update(model);
