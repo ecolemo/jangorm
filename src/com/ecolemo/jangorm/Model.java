@@ -3,6 +3,7 @@ package com.ecolemo.jangorm;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import com.ecolemo.jangorm.manager.ModelManager;
 
@@ -22,7 +23,8 @@ public class Model {
 		
 		try {
 			Field field = getClass().getField(key);
-			field.set(this, value);
+			if (field.getType().getName().equals("boolean")) field.set(this, value != Integer.valueOf(0));
+			else field.set(this, value);
 		} catch (NoSuchFieldException e) {
 		} catch (IllegalArgumentException e) {
 		} catch (IllegalAccessException e) {
@@ -51,6 +53,14 @@ public class Model {
 	public boolean has(String key) {
 		return properties.containsKey(key);
 	}
+	
+	public Set<String> keySet() {
+		return properties.keySet();
+	}
+	
+	public void remove(String key) {
+		properties.remove(key);
+	}
 
 	public int getInt(String key, int defaultValue) {
 		if (properties.get(key) == null) return defaultValue;
@@ -61,7 +71,10 @@ public class Model {
 		return (Integer) properties.get(key);
 	}
 	
-
+	public String getString(String key) {
+		return (String) properties.get(key);
+	}
+	
 	@Override
 	public String toString() {
 		return getClass().getSimpleName() + ":" + properties.toString();
@@ -72,6 +85,7 @@ public class Model {
 	}
 	
 	public void save() {
+		System.out.println("SAVE: " + existsInStorage() + " => " + this);
 		ModelManager manager = ModelManager.getDefaultModelManager();
 		if (existsInStorage()) {
 			manager.updateModel(this);
