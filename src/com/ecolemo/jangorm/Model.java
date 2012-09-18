@@ -66,6 +66,12 @@ public class Model {
 		if (properties.get(key) == null) return defaultValue;
 		return (Integer) properties.get(key);
 	}
+
+	public boolean getBoolean(String key) {
+		if (properties.get(key) == null) return false;
+		if (properties.get(key) instanceof Integer) return (Integer) properties.get(key) != 0;
+		return (Boolean) properties.get(key);
+	}
 	
 	public int getInt(String key) {
 		return (Integer) properties.get(key);
