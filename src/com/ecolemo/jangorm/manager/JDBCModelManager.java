@@ -32,8 +32,17 @@ public class JDBCModelManager extends ModelManager {
 		try {
 			Dao<T, Integer> dao = DaoManager.createDao(getConnectionSource(), model.getClass());
 			dao.create(model);
+			model.set("id", model.getClass().getField("id").get(model));
 	
 		} catch (SQLException e) {
+			throw new ModelException(e);
+		} catch (IllegalArgumentException e) {
+			throw new ModelException(e);
+		} catch (SecurityException e) {
+			throw new ModelException(e);
+		} catch (IllegalAccessException e) {
+			throw new ModelException(e);
+		} catch (NoSuchFieldException e) {
 			throw new ModelException(e);
 		}
 	}
