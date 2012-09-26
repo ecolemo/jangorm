@@ -21,6 +21,7 @@ public class QuerySet<T extends Model> implements Iterable<T> {
 	protected List<Object> joinParameters = new ArrayList<Object>();
 	protected List<String> whereClause = new ArrayList<String>();
 	protected List<Object> whereParameters = new ArrayList<Object>();
+	protected List<String> orders = new ArrayList<String>();
 
 	public QuerySet(Class<T> modelClass) {
 		this.modelClass = modelClass;
@@ -56,6 +57,11 @@ public class QuerySet<T extends Model> implements Iterable<T> {
 		for (Object param : parameters) {
 			joinParameters.add(param);
 		}
+		return this;
+	}
+	
+	public QuerySet<T> orderBy(String order) {
+		orders.add(order);
 		return this;
 	}
 	
@@ -106,6 +112,14 @@ public class QuerySet<T extends Model> implements Iterable<T> {
 				buffer.append(where + "\n  AND ");
 			}
 			buffer.delete(buffer.length() - 4, buffer.length() - 1);
+		}
+		
+		if (orders.size() > 0) {
+			buffer.append("\nORDER BY ");
+			for (String order: orders) {
+				buffer.append(order+ ", ");
+			}
+			buffer.delete(buffer.length() - 2, buffer.length());
 		}
 		return buffer.toString();
 	}
