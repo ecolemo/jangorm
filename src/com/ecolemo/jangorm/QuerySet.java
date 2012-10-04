@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 
+import com.ecolemo.jangorm.aggregate.Aggregate;
 import com.ecolemo.jangorm.manager.ModelManager;
 import com.j256.ormlite.field.FieldType;
 import com.j256.ormlite.table.DatabaseTableConfig;
@@ -22,6 +23,7 @@ public class QuerySet<T extends Model> implements Iterable<T> {
 	protected List<String> whereClause = new ArrayList<String>();
 	protected List<Object> whereParameters = new ArrayList<Object>();
 	protected List<String> orders = new ArrayList<String>();
+	protected List<Aggregate> aggregates = new ArrayList<Aggregate>();
 
 	public QuerySet(Class<T> modelClass) {
 		this.modelClass = modelClass;
@@ -77,14 +79,20 @@ public class QuerySet<T extends Model> implements Iterable<T> {
 	public String buildSQL() {
 		StringBuffer buffer = new StringBuffer();
 		buffer.append("SELECT ");
-		for (From from : fromClause) {
-			for (String columns : from.getSelectColumns()) {
-				buffer.append(columns + ",");
+		if (aggregates.size() > 0) {
+			for (Aggregate aggregate : aggregates) {
+				buffer.append(aggregate + ",");
 			}
-		}
-		for (From from : outerJoinClause) {
-			for (String columns : from.getSelectColumns()) {
-				buffer.append(columns + ",");
+		} else {
+			for (From from : fromClause) {
+				for (String columns : from.getSelectColumns()) {
+					buffer.append(columns + ",");
+				}
+			}
+			for (From from : outerJoinClause) {
+				for (String columns : from.getSelectColumns()) {
+					buffer.append(columns + ",");
+				}
 			}
 		}
 		buffer.deleteCharAt(buffer.length() - 1);
@@ -265,5 +273,9 @@ public class QuerySet<T extends Model> implements Iterable<T> {
 		System.out.println("rows:" + rows);
 		
 	}
-	
+
+	public QuerySet<T> aggregate(Aggregate... aggregates) {
+		this.aggregates.addAll(Arrays.asList(aggregates));
+		return this;
+	}
 }
