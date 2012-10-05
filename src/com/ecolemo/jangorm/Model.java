@@ -4,25 +4,23 @@ import java.lang.reflect.Field;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 import com.ecolemo.jangorm.manager.ModelManager;
+import com.ecolemo.jangorm.util.DataMap;
 
 
-public class Model {
+public class Model extends DataMap {
 
 	public static <T extends Model> QuerySet<T> objects(Class<T> model) {
 		return new QuerySet<T>(model);
 	}
 
-	protected Map<String, Object> properties = new HashMap<String, Object>();
 	protected boolean loadedFromStorage = false;
 	public static SimpleDateFormat dbDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSSSS");
 	
 	public <T extends Model> T set(String key, Object value) {
-		properties.put(key, value);
+		data.put(key, value);
 		
 		try {
 			Field field = getClass().getDeclaredField(key);
@@ -54,7 +52,7 @@ public class Model {
 			Field field = getClass().getField(key);
 			return field.get(this);
 		} catch (NoSuchFieldException e) {
-			return properties.get(key);
+			return data.get(key);
 		} catch (IllegalArgumentException e) {
 			throw new ModelException(e);
 		} catch (IllegalAccessException e) {
@@ -63,43 +61,38 @@ public class Model {
 	}
 	
 	public boolean has(String key) {
-		return properties.containsKey(key);
+		return data.containsKey(key);
 	}
 	
 	public Set<String> keySet() {
-		return properties.keySet();
+		return data.keySet();
 	}
 	
 	public void remove(String key) {
-		properties.remove(key);
-	}
-
-	public int getInt(String key, int defaultValue) {
-		if (properties.get(key) == null) return defaultValue;
-		return (Integer) properties.get(key);
+		data.remove(key);
 	}
 
 	public boolean getBoolean(String key) {
-		if (properties.get(key) == null) return false;
-		if (properties.get(key) instanceof Integer) return (Integer) properties.get(key) != 0;
-		return (Boolean) properties.get(key);
+		if (data.get(key) == null) return false;
+		if (data.get(key) instanceof Integer) return (Integer) data.get(key) != 0;
+		return (Boolean) data.get(key);
 	}
 	
 	public int getInt(String key) {
-		return (Integer) properties.get(key);
+		return (Integer) data.get(key);
 	}
 	
 	public String getString(String key) {
-		return (String) properties.get(key);
+		return (String) data.get(key);
 	}
 	
 	@Override
 	public String toString() {
-		return getClass().getSimpleName() + ":" + properties.toString();
+		return getClass().getSimpleName() + ":" + data.toString();
 	}
 
 	public Model getModel(String key) {
-		return (Model) properties.get(key);
+		return (Model) data.get(key);
 	}
 	
 	public void save() {
@@ -119,7 +112,7 @@ public class Model {
 	}
 	
 	public boolean existsInStorage() {
-		return properties.containsKey("id");
+		return data.containsKey("id");
 	}
 	
 	public static class CurrentClassGetter extends SecurityManager {

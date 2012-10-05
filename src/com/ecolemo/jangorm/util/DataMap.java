@@ -8,7 +8,7 @@ import java.util.Set;
 
 public class DataMap implements Map<String, Object> {
 
-	Map<String, Object> data = new HashMap<String, Object>();
+	protected Map<String, Object> data = new HashMap<String, Object>();
 
 	public void clear() {
 		data.clear();
@@ -66,20 +66,42 @@ public class DataMap implements Map<String, Object> {
 		return data.values();
 	}
 
+
+	public Object get(Object key, Object defaultValue) {
+		if (data.get(key) == null) return defaultValue;
+		return data.get(key);
+	}
+	
 	public String getString(String key) {
 		return (String) get(key);
 	}
 
+	public String getString(String key, String defaultValue) {
+		return (String) get(key, defaultValue);
+	}
+	
 	public int getInt(String key) {
 		return (Integer) get(key);
+	}
+
+	public int getInt(String key, int defaultValue) {
+		return (Integer) get(key, defaultValue);
 	}
 
 	public long getLong(String key) {
 		return (Long) get(key);
 	}
 
+	public long getLong(String key, long defaultValue) {
+		return (Long) get(key, defaultValue);
+	}
+
 	public boolean getBoolean(String key) {
 		return (Boolean) get(key);
+	}
+
+	public boolean getBoolean(String key, boolean defaultValue) {
+		return (Boolean) get(key, defaultValue);
 	}
 
 	public Date getDate(String key) {
