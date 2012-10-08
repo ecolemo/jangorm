@@ -24,6 +24,7 @@ public class QuerySet<T extends Model> implements Iterable<T> {
 	protected List<Object> whereParameters = new ArrayList<Object>();
 	protected List<String> orders = new ArrayList<String>();
 	protected List<Aggregate> aggregates = new ArrayList<Aggregate>();
+	protected List<String> selects = new ArrayList<String>();
 
 	public QuerySet(Class<T> modelClass) {
 		this.modelClass = modelClass;
@@ -83,6 +84,10 @@ public class QuerySet<T extends Model> implements Iterable<T> {
 			for (Aggregate aggregate : aggregates) {
 				buffer.append(aggregate + ",");
 			}
+		} else if (selects.size() > 0) {
+				for (String select: selects) {
+					buffer.append(select + ",");
+				}
 		} else {
 			for (From from : fromClause) {
 				for (String columns : from.getSelectColumns()) {
@@ -276,6 +281,10 @@ public class QuerySet<T extends Model> implements Iterable<T> {
 
 	public QuerySet<T> aggregate(Aggregate... aggregates) {
 		this.aggregates.addAll(Arrays.asList(aggregates));
+		return this;
+	}
+	public QuerySet<T> select(String... selects) {
+		this.selects.addAll(Arrays.asList(selects));
 		return this;
 	}
 }
