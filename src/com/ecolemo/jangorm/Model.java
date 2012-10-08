@@ -27,8 +27,11 @@ public class Model extends DataMap {
 			field.setAccessible(true);
 			if (field.getType().getName().equals("boolean")) {
 				field.set(this, value != Integer.valueOf(0));
+				data.put(key,  value != Integer.valueOf(0));
 			} else if (field.getType().equals(Date.class) && value instanceof String) {
-				field.set(this, dbDateFormat.parse((String)value));
+				Date date = dbDateFormat.parse((String)value);
+				field.set(this, date);
+				data.put(key,  date);
 			} else {
 				field.set(this, value);
 			}
