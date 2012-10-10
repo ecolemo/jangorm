@@ -1,5 +1,6 @@
 package com.ecolemo.jangorm.manager;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +16,7 @@ import com.j256.ormlite.table.TableUtils;
 public abstract class ModelManager {
 
 	private static ModelManager defaultModelManager;
+	protected ModelManagerExecutionListener executionListener;
 
 	public static ModelManager getDefaultModelManager() {
 		return defaultModelManager;
@@ -40,7 +42,7 @@ public abstract class ModelManager {
 	public void createTables(Class<? extends Model>... modelClasses) {
 		try {
 			for (Class<? extends Model> clazz : modelClasses) {
-				TableUtils.createTable(getConnectionSource(), clazz);
+				TableUtils.createTableIfNotExists(getConnectionSource(), clazz);
 			}
 		} catch (SQLException e) {
 			throw new ModelException(e);
@@ -57,5 +59,13 @@ public abstract class ModelManager {
 			throw new ModelException(e);
 		}
 		
+	}
+
+	public abstract Connection getConnection() throws SQLException;
+
+	public abstract void loadJSON(String table, String json);
+	
+	public void setExecutionListener(ModelManagerExecutionListener listenr) {
+		this.executionListener = listenr;
 	}
 }

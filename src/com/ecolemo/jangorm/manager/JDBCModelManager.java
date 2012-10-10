@@ -1,5 +1,8 @@
 package com.ecolemo.jangorm.manager;
 
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -8,6 +11,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.lang.StringUtils;
+import org.codehaus.jackson.JsonParseException;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
 
 import com.ecolemo.jangorm.JDBCQueryHandler;
 import com.ecolemo.jangorm.Model;
@@ -76,7 +84,7 @@ public class JDBCModelManager extends ModelManager {
 				}
 				throw new ModelException("no row found: " + query);
 			}
-		}.execute(url, query, parameters);
+		}.execute(this, query, parameters);
 	}
 
 	@Override
@@ -96,7 +104,7 @@ public class JDBCModelManager extends ModelManager {
 				}
 				throw new ModelException("no row found: " + query);
 			}
-		}.execute(url, query, parameters);
+		}.execute(this, query, parameters);
 	}
 
 	@Override
@@ -122,7 +130,7 @@ public class JDBCModelManager extends ModelManager {
 			public Integer run(PreparedStatement stmt, String query, Object... parameters) throws SQLException {
 				return stmt.executeUpdate();
 			}
-		}.execute(url, query, parameters);
+		}.execute(this, query, parameters);
 	
 	}
 
@@ -180,7 +188,41 @@ public class JDBCModelManager extends ModelManager {
 				System.out.println(list);
 				return list;
 			}
-		}.execute(url, sql, params);
+		}.execute(this, sql, params);
+	}
+
+	@Override
+	public Connection getConnection() throws SQLException {
+		return DriverManager.getConnection(url);
+	}
+
+	@Override
+	public void loadJSON(String model, String json) {
+		try {
+			
+			String[] parts = model.split("\\.");
+			String table = parts[parts.length - 1].toLowerCase();
+			
+			ObjectMapper mapper = new ObjectMapper();
+			Map<String, Object> object = mapper.readValue(json, Map.class);
+			StringBuilder sql = new StringBuilder();
+			
+			sql.append("INSERT INTO `" + table + "` (`");
+			sql.append(StringUtils.join(object.keySet(), "`, `"));
+			sql.append("`) VALUES (");
+			sql.append(StringUtils.repeat("?", ", ", object.keySet().size()));
+			sql.append(")");
+			System.out.println(sql + " " + object.values());
+			int update = executeUpdate(sql.toString(), object.values().toArray(new Object[]{}));
+			System.out.println("affected: " + update);
+			
+		} catch (JsonParseException e) {
+			e.printStackTrace();
+		} catch (JsonMappingException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 }

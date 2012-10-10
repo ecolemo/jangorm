@@ -1,13 +1,21 @@
 package com.ecolemo.jangorm;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
+
+import org.codehaus.jackson.JsonGenerationException;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
 
 import com.ecolemo.jangorm.manager.ModelManager;
 import com.ecolemo.jangorm.util.DataMap;
+import com.ecolemo.jangorm.util.DateFormats;
 
 
 public class Model extends DataMap {
@@ -122,5 +130,34 @@ public class Model extends DataMap {
 	    public Class getCurrentClass() {
 	        return getClassContext()[1]; 
 	    }
-	}	
+	}
+	
+	public String getTableName() {
+		return getClass().getSimpleName().toLowerCase();
+	}
+	
+	public String toJSON(boolean withRelated) {
+		Map<String, Object> object = this;
+		if (!withRelated) {
+			object = new HashMap<String, Object>();
+			for (String key : keySet()) {
+				if (get(key) instanceof Map) continue;
+				if (get(key) instanceof Date) {
+					object.put(key, DateFormats.plainDateFormat.format(get(key)));
+				} else {
+					object.put(key, get(key));
+				}
+			}
+		}
+		ObjectMapper mapper = new ObjectMapper();
+		try {
+			return mapper.writeValueAsString(object);
+		} catch (JsonGenerationException e) {
+			throw new RuntimeException(e);
+		} catch (JsonMappingException e) {
+			throw new RuntimeException(e);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
 }

@@ -1,24 +1,24 @@
 package com.ecolemo.jangorm.test.model;
 
-import java.util.Date;
-
 import com.ecolemo.jangorm.Model;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
 @DatabaseTable
-public class Order extends Model {
+public class SampleTable extends Model {
 	@DatabaseField(generatedId=true)
 	public int id;
 	@DatabaseField(foreign=true)
-	public Table table;
+	public TableGroup tablegroup;
 	@DatabaseField
-	public String status;
+	public String name;
 	@DatabaseField
-	public int total;
+	public int index;
 	@DatabaseField
-	public Date created;
+	public int x;
 	@DatabaseField
-	public Date updated;
+	public int y;
+	@DatabaseField
+	public String type;
 
 }
