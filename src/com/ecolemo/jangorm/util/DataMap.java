@@ -1,5 +1,6 @@
 package com.ecolemo.jangorm.util;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -81,10 +82,12 @@ public class DataMap implements Map<String, Object> {
 	}
 	
 	public int getInt(String key) {
+		if (get(key) instanceof BigDecimal) return ((BigDecimal) get(key)).intValue();
 		return (Integer) get(key);
 	}
 
 	public int getInt(String key, int defaultValue) {
+		if (get(key) instanceof BigDecimal) return ((BigDecimal) get(key)).intValue();
 		return (Integer) get(key, defaultValue);
 	}
 
@@ -106,5 +109,10 @@ public class DataMap implements Map<String, Object> {
 
 	public Date getDate(String key) {
 		return (Date) get(key);
+	}
+	
+	@Override
+	public String toString() {
+		return data.toString();
 	}
 }
