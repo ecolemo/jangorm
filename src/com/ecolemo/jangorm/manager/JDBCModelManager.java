@@ -21,6 +21,7 @@ import com.ecolemo.jangorm.JDBCQueryHandler;
 import com.ecolemo.jangorm.Model;
 import com.ecolemo.jangorm.ModelException;
 import com.ecolemo.jangorm.QuerySet;
+import com.ecolemo.jangorm.util.DataMap;
 import com.ecolemo.jangorm.util.QueryLog;
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.dao.DaoManager;
@@ -144,12 +145,12 @@ public class JDBCModelManager extends ModelManager {
 				ResultSet rs = stmt.executeQuery();
 				ResultSetMetaData metaData = rs.getMetaData();
 				List<T> list = new ArrayList<T>();
+				DatabaseTableConfig<T> tableConfig = DatabaseTableConfig.fromClass(getConnectionSource(), querySet.getModelClass());
 				while (rs.next()) {
 					try {
-						DatabaseTableConfig<T> tableConfig = DatabaseTableConfig.fromClass(getConnectionSource(), querySet.getModelClass());
 						T model = querySet.getModelClass().newInstance();
 						for (int i = 1; i <= metaData.getColumnCount(); i++) {
-							String[] columnName = metaData.getColumnName(i).split("__");
+							String[] columnName = metaData.getColumnLabel(i).split("__");
 	
 							if (columnName[0].equals(tableConfig.getTableName())) {
 								model.set(columnName[1], rs.getObject(i));
@@ -192,6 +193,48 @@ public class JDBCModelManager extends ModelManager {
 	}
 
 	@Override
+	public DataMap queryForDataMap(String sql, Object... parameters) {
+		System.out.println(QueryLog.generate(sql, parameters));
+		return new JDBCQueryHandler<DataMap>() {
+			@Override
+			public DataMap run(PreparedStatement stmt, String query, Object... parameters) throws SQLException {
+				ResultSet rs = stmt.executeQuery();
+				ResultSetMetaData metaData = rs.getMetaData();
+				DataMap row = new DataMap();
+				if (rs.next()) {
+					for (int i = 1; i <= metaData.getColumnCount(); i++) {
+						row.put(metaData.getColumnName(i), rs.getObject(i));
+					}
+				}
+				rs.close();
+				return row;
+			}
+		}.execute(this, sql, parameters);
+	}
+
+	
+	public List<DataMap> queryForList(String sql, Object... parameters) {
+		System.out.println(QueryLog.generate(sql, parameters));
+		return new JDBCQueryHandler<List<DataMap>>() {
+			@Override
+			public List<DataMap> run(PreparedStatement stmt, String query, Object... parameters) throws SQLException {
+				ResultSet rs = stmt.executeQuery();
+				ResultSetMetaData metaData = rs.getMetaData();
+				List<DataMap> list = new ArrayList<DataMap>();
+				while (rs.next()) {
+					DataMap row = new DataMap();
+					for (int i = 1; i <= metaData.getColumnCount(); i++) {
+						row.put(metaData.getColumnName(i), rs.getObject(i));
+					}
+					list.add(row);
+				}
+				rs.close();
+				return list;
+			}
+		}.execute(this, sql, parameters);
+	}
+	
+	@Override
 	public Connection getConnection() throws SQLException {
 		return DriverManager.getConnection(url);
 	}
@@ -214,6 +257,42 @@ public class JDBCModelManager extends ModelManager {
 			sql.append(")");
 			System.out.println(sql + " " + object.values());
 			int update = executeUpdate(sql.toString(), object.values().toArray(new Object[]{}));
+			System.out.println("affected: " + update);
+			
+		} catch (JsonParseException e) {
+			e.printStackTrace();
+		} catch (JsonMappingException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public void loadJSONForUpdate(String model, String json) {
+		try {
+			
+			String[] parts = model.split("\\.");
+			String table = parts[parts.length - 1].toLowerCase();
+			
+			ObjectMapper mapper = new ObjectMapper();
+			Map<String, Object> object = mapper.readValue(json, Map.class);
+			StringBuilder sql = new StringBuilder();
+			
+			sql.append("UPDATE `" + table + "` SET ");
+			
+			for (String key : object.keySet()) {
+				sql.append("`" + key + "`=?, ");
+			}
+			sql.deleteCharAt(sql.length() - 1);
+			sql.deleteCharAt(sql.length() - 1);
+			
+			sql.append(" WHERE id=?");
+
+			List values = new ArrayList(object.values());
+			values.add(object.get("id"));
+			System.out.println(sql + " " + values);
+			int update = executeUpdate(sql.toString(), values.toArray(new Object[]{}));
 			System.out.println("affected: " + update);
 			
 		} catch (JsonParseException e) {

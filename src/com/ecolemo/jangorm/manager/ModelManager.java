@@ -8,6 +8,7 @@ import java.util.Map;
 import com.ecolemo.jangorm.Model;
 import com.ecolemo.jangorm.ModelException;
 import com.ecolemo.jangorm.QuerySet;
+import com.ecolemo.jangorm.util.DataMap;
 import com.j256.ormlite.db.DatabaseType;
 import com.j256.ormlite.support.ConnectionSource;
 import com.j256.ormlite.table.TableUtils;
@@ -34,6 +35,8 @@ public abstract class ModelManager {
 
 	public abstract int executeUpdate(String query, Object... parameters);
 	
+	public abstract DataMap queryForDataMap(String sql, Object... parameters);
+	public abstract List<DataMap> queryForList(String sql, Object... parameters);
 	public abstract <T extends Model> List<T> queryForList(QuerySet<T> querySet);
 	public abstract <T extends Model> T preparedQueryForModel(Class<T> modelClass, String query, Object... parameters);
 	public abstract <T extends Model> void insertModel(T model);
@@ -64,6 +67,7 @@ public abstract class ModelManager {
 	public abstract Connection getConnection() throws SQLException;
 
 	public abstract void loadJSON(String table, String json);
+	public abstract void loadJSONForUpdate(String table, String json);
 	
 	public void setExecutionListener(ModelManagerExecutionListener listenr) {
 		this.executionListener = listenr;
