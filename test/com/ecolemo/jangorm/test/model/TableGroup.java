@@ -6,8 +6,8 @@ import com.j256.ormlite.table.DatabaseTable;
 
 @DatabaseTable
 public class TableGroup extends Model {
-	@DatabaseField(generatedId=true)
-	public int id;
+	@DatabaseField(id=true)
+	public String id;
 	@DatabaseField 
 	public String name;
 

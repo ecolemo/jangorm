@@ -8,8 +8,8 @@ import com.j256.ormlite.table.DatabaseTable;
 
 @DatabaseTable
 public class SampleOrder extends Model {
-	@DatabaseField(generatedId=true)
-	public int id;
+	@DatabaseField(id=true)
+	public String id;
 	@DatabaseField(foreign=true)
 	public SampleTable sampletable;
 	@DatabaseField
