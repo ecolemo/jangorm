@@ -1,5 +1,7 @@
 package com.ecolemo.jangorm.manager;
 
+import java.io.Reader;
+import java.io.Writer;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
@@ -66,10 +68,13 @@ public abstract class ModelManager {
 
 	public abstract Connection getConnection() throws SQLException;
 
-	public abstract void loadJSON(String table, String json);
-	public abstract void loadJSONForUpdate(String table, String json);
+	public abstract void loadJSONModel(String table, String json);
+	public abstract void loadJSONModelForUpdate(String table, String json);
+	public abstract void loadJSON(Reader reader);
+	public abstract void dumpJSON(Writer writer, Class<? extends Model>... modelClasses);
 	
 	public void setExecutionListener(ModelManagerExecutionListener listenr) {
 		this.executionListener = listenr;
 	}
+
 }

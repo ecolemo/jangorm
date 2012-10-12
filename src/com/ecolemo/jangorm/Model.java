@@ -16,6 +16,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 import com.ecolemo.jangorm.manager.ModelManager;
 import com.ecolemo.jangorm.util.DataMap;
 import com.ecolemo.jangorm.util.DateFormats;
+import com.j256.ormlite.field.DatabaseField;
 
 
 public class Model extends DataMap {
@@ -158,6 +159,21 @@ public class Model extends DataMap {
 			throw new RuntimeException(e);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
+		}
+	}
+	
+	public void overwriteFieldsToProperties() {
+		try {
+			Field[] fields = getClass().getFields();
+			for (Field field : fields) {
+				if (field.getAnnotation(DatabaseField.class) != null) {
+					put(field.getName(), field.get(this));
+				}
+			}
+		} catch (IllegalArgumentException e) {
+			throw new ModelException(e);
+		} catch (IllegalAccessException e) {
+			throw new ModelException(e);
 		}
 	}
 }

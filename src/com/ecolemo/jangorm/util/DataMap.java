@@ -11,6 +11,14 @@ public class DataMap implements Map<String, Object> {
 
 	protected Map<String, Object> data = new HashMap<String, Object>();
 
+	public DataMap() {
+		this(null);
+	}
+	
+	public DataMap(Map map) {
+		if (map != null) putAll(map);
+	}
+
 	public void clear() {
 		data.clear();
 	}

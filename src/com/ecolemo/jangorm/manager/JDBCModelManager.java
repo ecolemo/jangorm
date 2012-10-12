@@ -1,6 +1,8 @@
 package com.ecolemo.jangorm.manager;
 
 import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -13,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
+import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -38,20 +41,21 @@ public class JDBCModelManager extends ModelManager {
 
     @SuppressWarnings("unchecked")
     public <T extends Model> void insertModel(T model) {
+		String generatedId = model.toString().hashCode() + " " + Math.random();
 		try {
 			Dao<T, Integer> dao = DaoManager.createDao(getConnectionSource(), model.getClass());
+			// TODO generated id
+			System.out.println("ID========================" + generatedId);
+			if (!model.containsKey("id")) model.set("id", generatedId);
 			dao.create(model);
-			model.set("id", model.getClass().getField("id").get(model));
+//			model.set("id", model.getClass().getField("id").get(model));
 	
 		} catch (SQLException e) {
+			System.out.println("ERROR========================" + generatedId);
 			throw new ModelException(e);
 		} catch (IllegalArgumentException e) {
 			throw new ModelException(e);
 		} catch (SecurityException e) {
-			throw new ModelException(e);
-		} catch (IllegalAccessException e) {
-			throw new ModelException(e);
-		} catch (NoSuchFieldException e) {
 			throw new ModelException(e);
 		}
 	}
@@ -240,7 +244,7 @@ public class JDBCModelManager extends ModelManager {
 	}
 
 	@Override
-	public void loadJSON(String model, String json) {
+	public void loadJSONModel(String model, String json) {
 		try {
 			
 			String[] parts = model.split("\\.");
@@ -269,7 +273,7 @@ public class JDBCModelManager extends ModelManager {
 	}
 
 	@Override
-	public void loadJSONForUpdate(String model, String json) {
+	public void loadJSONModelForUpdate(String model, String json) {
 		try {
 			
 			String[] parts = model.split("\\.");
@@ -301,6 +305,51 @@ public class JDBCModelManager extends ModelManager {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public void loadJSON(Reader reader) {
+		try {
+			ObjectMapper mapper = new ObjectMapper();
+			List<Map> list = mapper.readValue(reader, List.class);
+			for (Map object : list) {
+				Class modelClass = Class.forName((String) object.get("model"));
+				Model.objects(modelClass).create(new DataMap((Map) object.get("fields")));
+			}
+			
+		} catch (JsonParseException e) {
+			throw new ModelException(e);
+		} catch (JsonMappingException e) {
+			throw new ModelException(e);
+		} catch (IOException e) {
+			throw new ModelException(e);
+		} catch (ClassNotFoundException e) {
+			throw new ModelException(e);
+		}
+	}
+
+	@Override
+	public void dumpJSON(Writer writer, Class<? extends Model>... modelClasses) {
+		List<DataMap> objects = new ArrayList<DataMap>();
+		for (Class<? extends Model> modelClass : modelClasses) {
+			for (Model model : Model.objects(modelClass)) {
+				DataMap object = new DataMap();
+				object.put("pk", model.get("id"));
+				object.put("model", modelClass.getName());
+				object.put("fields", model);
+				objects.add(object);
+			}
+		}
+		ObjectMapper mapper = new ObjectMapper();
+		try {
+			mapper.writeValue(writer, objects);
+		} catch (JsonGenerationException e) {
+			throw new ModelException(e);
+		} catch (JsonMappingException e) {
+			throw new ModelException(e);
+		} catch (IOException e) {
+			throw new ModelException(e);
 		}
 	}
 

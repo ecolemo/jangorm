@@ -1,5 +1,6 @@
 package com.ecolemo.jangorm;
 
+import java.lang.reflect.Field;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -9,6 +10,7 @@ import java.util.Map.Entry;
 
 import com.ecolemo.jangorm.aggregate.Aggregate;
 import com.ecolemo.jangorm.manager.ModelManager;
+import com.ecolemo.jangorm.util.DataMap;
 import com.j256.ormlite.field.FieldType;
 import com.j256.ormlite.table.DatabaseTableConfig;
 
@@ -147,6 +149,33 @@ public class QuerySet<T extends Model> implements Iterable<T> {
 		return manager.queryForList(this).iterator().next();
 	}
 
+	public T create(DataMap data) {
+		try {
+			T object = (T) modelClass.newInstance();
+			for (Entry<String, Object> entry : data.entrySet()) {
+				if (entry.getKey().endsWith("_id")) {
+					String key = entry.getKey().split("_")[0];
+					Field field = modelClass.getDeclaredField(key);
+					Model foreign = (Model) field.getType().newInstance();
+					foreign.set("id", entry.getValue());
+					object.set(key, foreign);
+				}
+				object.set(entry.getKey(), entry.getValue());
+			}
+			manager.insertModel(object);
+			return object;
+		} catch (InstantiationException e) {
+			throw new ModelException(e);
+		} catch (IllegalAccessException e) {
+			throw new ModelException(e);
+		} catch (SecurityException e) {
+			throw new ModelException(e);
+		} catch (NoSuchFieldException e) {
+			throw new ModelException(e);
+		}
+	}
+		
+	
 	public T create(Entry<String, Object>... entries) {
 		try {
 			T object = (T) modelClass.newInstance();
@@ -287,4 +316,5 @@ public class QuerySet<T extends Model> implements Iterable<T> {
 		this.selects.addAll(Arrays.asList(selects));
 		return this;
 	}
+
 }
