@@ -19,7 +19,7 @@ public class MySQLModelManager extends JDBCModelManager {
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		}
-		url = String.format("jdbc:mysql://%s/%s", host, database);
+		url = String.format("jdbc:mysql://%s/%s?useUnicode=true&characterEncoding=utf8", host, database);
 		this.user = user;
 		this.password = password;
 	}
