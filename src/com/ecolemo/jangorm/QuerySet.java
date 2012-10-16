@@ -1,5 +1,7 @@
 package com.ecolemo.jangorm;
 
+import static com.ecolemo.jangorm.util.KeyValueEntry.kv;
+
 import java.lang.reflect.Field;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -27,6 +29,9 @@ public class QuerySet<T extends Model> implements Iterable<T> {
 	protected List<String> orders = new ArrayList<String>();
 	protected List<Aggregate> aggregates = new ArrayList<Aggregate>();
 	protected List<String> selects = new ArrayList<String>();
+
+	protected int pageBegin = 0;
+	protected int pageSize = 0;
 
 	public QuerySet(Class<T> modelClass) {
 		this.modelClass = modelClass;
@@ -135,6 +140,10 @@ public class QuerySet<T extends Model> implements Iterable<T> {
 				buffer.append(order+ ", ");
 			}
 			buffer.delete(buffer.length() - 2, buffer.length());
+		}
+		
+		if (pageSize > 0) {
+			buffer.append(String.format(" LIMIT %d, %d", pageBegin, pageSize));
 		}
 		return buffer.toString();
 	}
@@ -314,6 +323,21 @@ public class QuerySet<T extends Model> implements Iterable<T> {
 	}
 	public QuerySet<T> select(String... selects) {
 		this.selects.addAll(Arrays.asList(selects));
+		return this;
+	}
+
+	public T getByID(String resourceID) {
+		return get(kv("id", resourceID));
+	}
+
+	public long count() {
+		return this.select("count(id) " + modelClass.getSimpleName().toLowerCase() + "__count").get().getLong("count");
+	}
+
+	public QuerySet<T> limit(int pageBegin, int pageSize) {
+		
+		this.pageBegin = pageBegin;
+		this.pageSize = pageSize;
 		return this;
 	}
 

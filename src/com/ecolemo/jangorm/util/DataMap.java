@@ -123,4 +123,13 @@ public class DataMap implements Map<String, Object> {
 	public String toString() {
 		return data.toString();
 	}
+
+	public int parseInt(String key) {
+		return Integer.parseInt(getString(key));
+	}
+
+	public int parseInt(String key, int defaultValue) {
+		if (!containsKey(key)) return defaultValue;
+		return Integer.parseInt(getString(key));
+	}
 }

@@ -46,6 +46,7 @@ public class Model extends DataMap {
 			}
 		} catch (NoSuchFieldException e) {
 		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
 		} catch (IllegalAccessException e) {
 			throw new ModelException(e);
 		} catch (ParseException e) {
@@ -174,6 +175,12 @@ public class Model extends DataMap {
 			throw new ModelException(e);
 		} catch (IllegalAccessException e) {
 			throw new ModelException(e);
+		}
+	}
+
+	public void setAll(Map<String, Object> map) {
+		for (String key : map.keySet()) {
+			set(key, map.get(key));
 		}
 	}
 }
