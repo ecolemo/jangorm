@@ -2,8 +2,11 @@ package com.ecolemo.jangorm.manager;
 
 import java.io.Reader;
 import java.io.Writer;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -75,6 +78,62 @@ public abstract class ModelManager {
 	
 	public void setExecutionListener(ModelManagerExecutionListener listenr) {
 		this.executionListener = listenr;
+	}
+	
+	protected String generatedId() {
+        int timestamp = (int) (new Date().getTime() / 1000.0);
+        String timestampStr = intToHexString(timestamp);
+
+        String incrementId = incrementId(timestamp);
+        previousTimestamp = timestamp;
+    	
+    	return timestampStr + incrementId + deviceId();
+	}
+	
+	abstract protected String deviceId();
+    
+	private String intToHexString(int timestamp) {
+		byte[] byteArray = intToByteArray(timestamp);
+        String timestampStr = byteArrayToHexString(byteArray);
+		return timestampStr;
+	}
+    
+	static int incrementId = 0;
+	static int previousTimestamp = -1;
+    
+	private String incrementId(int timestamp) {
+		if (previousTimestamp == timestamp) {
+			incrementId++;
+		}
+		else {
+			incrementId=0;
+		}
+		
+		System.out.println("called increment id :"+incrementId);
+		
+		byte[] byteArray = intToByteArray(incrementId);
+		byte[] threeBytes = new byte[3];
+		threeBytes[0] = byteArray[1];
+		threeBytes[1] = byteArray[2];
+		threeBytes[2] = byteArray[3];
+		
+		return byteArrayToHexString(threeBytes);
+	}
+	
+    private static byte[] intToByteArray(final int integer) {
+        ByteBuffer buff = ByteBuffer.allocate(Integer.SIZE / 8);
+        buff.putInt(integer);
+        buff.order(ByteOrder.BIG_ENDIAN);
+        return buff.array();
+    }
+
+	protected String byteArrayToHexString(byte[] byteArray) {
+		StringBuilder s = new StringBuilder();
+        for (int i=0;i<byteArray.length;i++) {
+        	s.append(String.format("%02x", byteArray[i]));
+        }
+        // make it to hex code
+        return s.toString();
 	}
 
 }

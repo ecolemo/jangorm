@@ -3,6 +3,8 @@ package com.ecolemo.jangorm.manager;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -10,6 +12,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,7 +44,10 @@ public class JDBCModelManager extends ModelManager {
 
     @SuppressWarnings("unchecked")
     public <T extends Model> void insertModel(T model) {
-		String generatedId = model.toString().hashCode() + " " + Math.random();
+//		String generatedId = model.toString().hashCode() + " " + Math.random();
+//        model.set("id", generatedId());
+    	String generatedId = generatedId();
+
 		try {
 			Dao<T, Integer> dao = DaoManager.createDao(getConnectionSource(), model.getClass());
 			// TODO generated id
@@ -353,4 +359,23 @@ public class JDBCModelManager extends ModelManager {
 		}
 	}
 
+	@Override
+	protected String deviceId() {
+		Enumeration<NetworkInterface> nis;
+		try {
+			nis = NetworkInterface.getNetworkInterfaces();
+			while (nis.hasMoreElements()) {
+				NetworkInterface ni = nis.nextElement();
+				byte[] address = ni.getHardwareAddress();
+			    String addressStr = byteArrayToHexString(address);
+				System.out.println("device id :" + addressStr);
+			    return addressStr;
+			}
+		} catch (SocketException e) {
+			throw new RuntimeException("DeviceIdGenerationException");
+		}
+
+		// TODO : network card 없을 경우에는?
+		throw new RuntimeException("NoDeviceException");
+	}
 }
