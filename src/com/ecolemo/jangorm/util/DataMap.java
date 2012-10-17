@@ -129,7 +129,10 @@ public class DataMap implements Map<String, Object> {
 	}
 
 	public int parseInt(String key, int defaultValue) {
-		if (!containsKey(key)) return defaultValue;
-		return Integer.parseInt(getString(key));
+		try {
+			return Integer.parseInt(getString(key));
+		} catch (RuntimeException e) {
+			return defaultValue;
+		}
 	}
 }
