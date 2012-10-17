@@ -359,8 +359,12 @@ public class JDBCModelManager extends ModelManager {
 		}
 	}
 
+	
+	protected static String _deviceId = null;
 	@Override
 	protected String deviceId() {
+		if (_deviceId!=null) return _deviceId;
+		
 		Enumeration<NetworkInterface> nis;
 		try {
 			nis = NetworkInterface.getNetworkInterfaces();
@@ -368,7 +372,7 @@ public class JDBCModelManager extends ModelManager {
 				NetworkInterface ni = nis.nextElement();
 				byte[] address = ni.getHardwareAddress();
 			    String addressStr = byteArrayToHexString(address);
-				System.out.println("device id :" + addressStr);
+				_deviceId = addressStr;
 			    return addressStr;
 			}
 		} catch (SocketException e) {
