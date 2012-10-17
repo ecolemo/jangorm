@@ -23,6 +23,7 @@ public class QuerySet<T extends Model> implements Iterable<T> {
 	protected Class modelClass;
 	protected List<From> fromClause = new ArrayList<From>();
 	protected List<From> outerJoinClause = new ArrayList<From>();
+	protected List<From> selectRelatedClause = new ArrayList<From>();
 	protected List<Object> joinParameters = new ArrayList<Object>();
 	protected List<String> whereClause = new ArrayList<String>();
 	protected List<Object> whereParameters = new ArrayList<Object>();
@@ -47,9 +48,7 @@ public class QuerySet<T extends Model> implements Iterable<T> {
 
 	public QuerySet<T> selectRelated(Class<? extends Model> foreignClass, String fieldName) {
 		From foreign = new From(foreignClass, fieldName);
-		fromClause.add(foreign);
-		String join = String.format("`%s`.%s_id=`%s`.id", fromClause.get(0).getTableName(), fieldName, foreign.getTableName());
-		whereClause.add(join);
+		selectRelatedClause.add(foreign);
 		return this;
 	}
 
@@ -101,6 +100,11 @@ public class QuerySet<T extends Model> implements Iterable<T> {
 					buffer.append(columns + ",");
 				}
 			}
+			for (From from : selectRelatedClause) {
+				for (String columns : from.getSelectColumns()) {
+					buffer.append(columns + ",");
+				}
+			}
 			for (From from : outerJoinClause) {
 				for (String columns : from.getSelectColumns()) {
 					buffer.append(columns + ",");
@@ -115,6 +119,14 @@ public class QuerySet<T extends Model> implements Iterable<T> {
 		}
 		buffer.deleteCharAt(buffer.length() - 1);
 		
+		if (selectRelatedClause.size() > 0) {
+			for (From from : selectRelatedClause) {
+				buffer.append(" LEFT JOIN ");
+				buffer.append(String.format(" `%s` `%s`", from.getTableName(), from.alias));
+				buffer.append(" ON ");
+				buffer.append(String.format("`%s`.%s_id=`%s`.id", fromClause.get(0).getTableName(), from.alias, from.getTableName()));
+			}
+		}
 		if (outerJoinClause.size() > 0) {
 			buffer.append(" LEFT OUTER JOIN ");
 			for (From from : outerJoinClause) {
