@@ -24,6 +24,7 @@ import com.ecolemo.jangorm.JDBCQueryHandler;
 import com.ecolemo.jangorm.Model;
 import com.ecolemo.jangorm.ModelException;
 import com.ecolemo.jangorm.QuerySet;
+import com.ecolemo.jangorm.TableConfigCache;
 import com.ecolemo.jangorm.util.DataMap;
 import com.ecolemo.jangorm.util.QueryLog;
 import com.j256.ormlite.dao.Dao;
@@ -152,7 +153,7 @@ public class JDBCModelManager extends ModelManager {
 				ResultSet rs = stmt.executeQuery();
 				ResultSetMetaData metaData = rs.getMetaData();
 				List<T> list = new ArrayList<T>();
-				DatabaseTableConfig<T> tableConfig = DatabaseTableConfig.fromClass(getConnectionSource(), querySet.getModelClass());
+				DatabaseTableConfig<T> tableConfig = TableConfigCache._cache.get(getConnectionSource(), querySet.getModelClass());
 				while (rs.next()) {
 					try {
 						T model = querySet.getModelClass().newInstance();

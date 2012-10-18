@@ -227,7 +227,7 @@ public class QuerySet<T extends Model> implements Iterable<T> {
 			this.alias = alias;
 			this.where = where;
 			try {
-				tableConfig = DatabaseTableConfig.fromClass(manager.getConnectionSource(), modelClass);
+				tableConfig = TableConfigCache._cache.get(manager.getConnectionSource(), modelClass);
 				if (this.alias == null)
 					this.alias = tableConfig.getTableName();
 			} catch (SQLException e) {
@@ -256,7 +256,7 @@ public class QuerySet<T extends Model> implements Iterable<T> {
 			} catch (SQLException e) {
 				throw new RuntimeException(e);
 			}
-			
+
 			return columns;
 		}
 

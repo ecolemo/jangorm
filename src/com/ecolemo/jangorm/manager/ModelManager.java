@@ -114,8 +114,6 @@ public abstract class ModelManager {
 			incrementId=0;
 		}
 		
-		System.out.println("called increment id :"+incrementId);
-		
 		byte[] byteArray = intToByteArray(incrementId);
 		byte[] threeBytes = new byte[3];
 		threeBytes[0] = byteArray[1];
