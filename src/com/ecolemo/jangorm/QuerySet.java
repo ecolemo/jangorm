@@ -6,9 +6,12 @@ import java.lang.reflect.Field;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.NoSuchElementException;
 
 import com.ecolemo.jangorm.aggregate.Aggregate;
 import com.ecolemo.jangorm.manager.ModelManager;
@@ -180,8 +183,21 @@ public class QuerySet<T extends Model> implements Iterable<T> {
 					Model foreign = (Model) field.getType().newInstance();
 					foreign.set("id", entry.getValue());
 					object.set(key, foreign);
+					object.set(entry.getKey(), entry.getValue());
+				} else if (entry.getValue() instanceof Map) {
+					Field field = modelClass.getDeclaredField(entry.getKey());
+					Model foreign = (Model) field.getType().newInstance();
+					foreign.setAll((Map<String, Object>) entry.getValue());
+					object.set(entry.getKey(), foreign);
+				} else {
+					Field field = modelClass.getDeclaredField(entry.getKey());
+					if (field.getType().equals(Date.class) && entry.getValue() instanceof Long) {
+						object.set(entry.getKey(), new Date((Long) entry.getValue()));
+					} else {
+						object.set(entry.getKey(), entry.getValue());
+					}
 				}
-				object.set(entry.getKey(), entry.getValue());
+
 			}
 			manager.insertModel(object);
 			return object;
@@ -339,7 +355,11 @@ public class QuerySet<T extends Model> implements Iterable<T> {
 	}
 
 	public T getByID(String resourceID) {
-		return get(kv("id", resourceID));
+		try {
+			return get(kv("id", resourceID));
+		} catch (NoSuchElementException e) {
+			throw new ModelException("Could not found " + modelClass + " for ID [" + resourceID + "].");
+		}
 	}
 
 	public long count() {
