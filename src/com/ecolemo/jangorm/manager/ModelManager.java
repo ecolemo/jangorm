@@ -1,14 +1,21 @@
 package com.ecolemo.jangorm.manager;
 
+import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+
+import org.codehaus.jackson.JsonGenerationException;
+import org.codehaus.jackson.JsonParseException;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
 
 import com.ecolemo.jangorm.Model;
 import com.ecolemo.jangorm.ModelException;
@@ -73,8 +80,6 @@ public abstract class ModelManager {
 
 	public abstract void loadJSONModel(String table, String json);
 	public abstract void loadJSONModelForUpdate(String table, String json);
-	public abstract void loadJSON(Reader reader);
-	public abstract void dumpJSON(Writer writer, Class<? extends Model>... modelClasses);
 	
 	public void setExecutionListener(ModelManagerExecutionListener listenr) {
 		this.executionListener = listenr;
@@ -134,6 +139,50 @@ public abstract class ModelManager {
         }
         // make it to hex code
         return s.toString();
+	}
+
+	public void loadJSON(Reader reader) {
+		try {
+			ObjectMapper mapper = new ObjectMapper();
+			List<Map> list = mapper.readValue(reader, List.class);
+			for (Map object : list) {
+				Class modelClass = Class.forName((String) object.get("model"));
+				Model.objects(modelClass).create(new DataMap((Map) object.get("fields")));
+			}
+			
+		} catch (JsonParseException e) {
+			throw new ModelException(e);
+		} catch (JsonMappingException e) {
+			throw new ModelException(e);
+		} catch (IOException e) {
+			throw new ModelException(e);
+		} catch (ClassNotFoundException e) {
+			throw new ModelException(e);
+		}
+	}
+
+	public void dumpJSON(Writer writer, Class<? extends Model>... modelClasses) {
+		List<DataMap> objects = new ArrayList<DataMap>();
+		for (Class<? extends Model> modelClass : modelClasses) {
+			for (Model model : Model.objects(modelClass)) {
+				DataMap object = new DataMap();
+				object.put("pk", model.get("id"));
+				object.put("model", modelClass.getName());
+				object.put("fields", model);
+				objects.add(object);
+			}
+		}
+		ObjectMapper mapper = new ObjectMapper();
+		try {
+			mapper.writeValue(writer, objects);
+			writer.close();
+		} catch (JsonGenerationException e) {
+			throw new ModelException(e);
+		} catch (JsonMappingException e) {
+			throw new ModelException(e);
+		} catch (IOException e) {
+			throw new ModelException(e);
+		}
 	}
 
 }

@@ -1,8 +1,6 @@
 package com.ecolemo.jangorm.manager;
 
 import java.io.IOException;
-import java.io.Reader;
-import java.io.Writer;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.sql.Connection;
@@ -18,7 +16,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
-import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -314,52 +311,6 @@ public class JDBCModelManager extends ModelManager {
 		}
 	}
 
-	@Override
-	public void loadJSON(Reader reader) {
-		try {
-			ObjectMapper mapper = new ObjectMapper();
-			List<Map> list = mapper.readValue(reader, List.class);
-			for (Map object : list) {
-				Class modelClass = Class.forName((String) object.get("model"));
-				Model.objects(modelClass).create(new DataMap((Map) object.get("fields")));
-			}
-			
-		} catch (JsonParseException e) {
-			throw new ModelException(e);
-		} catch (JsonMappingException e) {
-			throw new ModelException(e);
-		} catch (IOException e) {
-			throw new ModelException(e);
-		} catch (ClassNotFoundException e) {
-			throw new ModelException(e);
-		}
-	}
-
-	@Override
-	public void dumpJSON(Writer writer, Class<? extends Model>... modelClasses) {
-		List<DataMap> objects = new ArrayList<DataMap>();
-		for (Class<? extends Model> modelClass : modelClasses) {
-			for (Model model : Model.objects(modelClass)) {
-				DataMap object = new DataMap();
-				object.put("pk", model.get("id"));
-				object.put("model", modelClass.getName());
-				object.put("fields", model);
-				objects.add(object);
-			}
-		}
-		ObjectMapper mapper = new ObjectMapper();
-		try {
-			mapper.writeValue(writer, objects);
-		} catch (JsonGenerationException e) {
-			throw new ModelException(e);
-		} catch (JsonMappingException e) {
-			throw new ModelException(e);
-		} catch (IOException e) {
-			throw new ModelException(e);
-		}
-	}
-
-	
 	protected static String _deviceId = null;
 	@Override
 	protected String deviceId() {
