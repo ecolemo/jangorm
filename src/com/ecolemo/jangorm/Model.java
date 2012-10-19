@@ -41,11 +41,12 @@ public class Model extends DataMap {
 				Date date = dbDateFormat.parse((String)value);
 				field.set(this, date);
 				data.put(key,  date);
-			} else {
+			} else if (value != null) {
 				field.set(this, value);
 			}
 		} catch (NoSuchFieldException e) {
 		} catch (IllegalArgumentException e) {
+			System.out.println("Failed to set " + key + ":" + value);
 			e.printStackTrace();
 		} catch (IllegalAccessException e) {
 			throw new ModelException(e);
