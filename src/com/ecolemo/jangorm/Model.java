@@ -139,17 +139,16 @@ public class Model extends DataMap {
 		return getClass().getSimpleName().toLowerCase();
 	}
 	
-	public String toJSON(boolean withRelated) {
-		Map<String, Object> object = this;
-		if (!withRelated) {
-			object = new HashMap<String, Object>();
-			for (String key : keySet()) {
-				if (get(key) instanceof Map) continue;
-				if (get(key) instanceof Date) {
-					object.put(key, DateFormats.plainDateFormat.format(get(key)));
-				} else {
-					object.put(key, get(key));
-				}
+	public String toJSON() {
+		overwriteFieldsToProperties();
+		Map<String, Object> object = new HashMap<String, Object>();
+		for (Entry<String, Object> entry : entrySet()) {
+			if (entry.getValue() instanceof Map) {
+				object.put(entry.getKey() + "_id", ((Map) entry.getValue()).get("id"));
+			} else if (entry.getValue() instanceof Date) {
+				object.put(entry.getKey(), DateFormats.plain.format(entry.getValue()));
+			} else {
+				object.put(entry.getKey(), entry.getValue());
 			}
 		}
 		ObjectMapper mapper = new ObjectMapper();

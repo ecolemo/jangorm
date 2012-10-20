@@ -26,9 +26,9 @@ public class TestSync {
 		SampleOrder order = new SampleOrder();
 		table.set("order", order);
 		
-		assertEquals("{\"index\":4,\"name\":\"aaaa\"}", table.toJSON(false));
+		assertEquals("{\"index\":4,\"name\":\"aaaa\"}", table.toJSON());
 		
-		System.out.println(order.toJSON(false));
+		System.out.println(order.toJSON());
 	}
 	
 	@Test
@@ -42,7 +42,7 @@ public class TestSync {
 		table.set("index", 4);
 		table.set("order", new SampleOrder());
 
-		manager.loadJSONModel("com.ecolemo.jangorm.test.model.SampleTable", table.toJSON(false));
+		manager.loadJSONModel("com.ecolemo.jangorm.test.model.SampleTable", table.toJSON());
 		
 		assertEquals(4, SampleTable.objects(SampleTable.class).get(kv("name", "aaaa")).index);
 	}
