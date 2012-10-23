@@ -32,9 +32,9 @@ public class Model extends DataMap {
 		data.put(key, value);
 		
 		try {
-			Field field = getClass().getDeclaredField(key);
+			Field field = getClass().getField(key);
 			field.setAccessible(true);
-			if (field.getType().getName().equals("boolean")) {
+			if (field.getType().getName().equals("boolean") && !(value instanceof Boolean)) {
 				field.set(this, value != Integer.valueOf(0));
 				data.put(key,  value != Integer.valueOf(0));
 			} else if (field.getType().equals(Date.class) && value instanceof String) {
