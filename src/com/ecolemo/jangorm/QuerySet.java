@@ -174,9 +174,16 @@ public class QuerySet<T extends Model> implements Iterable<T> {
 	}
 
 	public T create(DataMap data) {
+		T object = null;
 		try {
-			T object = (T) modelClass.newInstance();
-			for (Entry<String, Object> entry : data.entrySet()) {
+			object = (T) modelClass.newInstance();
+		} catch (IllegalAccessException e) {
+			throw new ModelException(e);
+		} catch (InstantiationException e) {
+			throw new ModelException(e);
+		}
+		for (Entry<String, Object> entry : data.entrySet()) {
+			try {
 				if (entry.getKey().endsWith("_id")) {
 					String key = entry.getKey().split("_")[0];
 					Field field = modelClass.getDeclaredField(key);
@@ -197,19 +204,17 @@ public class QuerySet<T extends Model> implements Iterable<T> {
 						object.set(entry.getKey(), entry.getValue());
 					}
 				}
-
+			} catch (InstantiationException e) {
+				throw new ModelException(e);
+			} catch (IllegalAccessException e) {
+				throw new ModelException(e);
+			} catch (SecurityException e) {
+				throw new ModelException(e);
+			} catch (NoSuchFieldException e) {
 			}
-			manager.insertModel(object);
-			return object;
-		} catch (InstantiationException e) {
-			throw new ModelException(e);
-		} catch (IllegalAccessException e) {
-			throw new ModelException(e);
-		} catch (SecurityException e) {
-			throw new ModelException(e);
-		} catch (NoSuchFieldException e) {
-			throw new ModelException(e);
 		}
+		manager.insertModel(object);
+		return object;
 	}
 		
 	
