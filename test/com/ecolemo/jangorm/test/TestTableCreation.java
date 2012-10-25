@@ -15,7 +15,7 @@ public class TestTableCreation {
 		ModelManager manager = new SQLiteModelManager("testdb.sqlite3");
 		manager.dropTables(SampleTable.class);
 		manager.createTables(SampleTable.class);
-		assertEquals("table", manager.preparedQueryForMap("SELECT * FROM sqlite_master WHERE name='table'").get("name"));
+		assertEquals("sampletable", manager.preparedQueryForMap("SELECT * FROM sqlite_master WHERE name='sampletable'").get("name"));
 	}
 
 }

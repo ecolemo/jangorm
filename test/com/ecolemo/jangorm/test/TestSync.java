@@ -8,7 +8,9 @@ import java.io.BufferedWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.List;
+import java.util.Map;
 
+import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Test;
 
 import com.ecolemo.jangorm.manager.ModelManager;
@@ -24,11 +26,14 @@ public class TestSync {
 		table.set("name", "aaaa");
 		table.set("index", 4);
 		SampleOrder order = new SampleOrder();
+		order.set("id", "xxx");
 		table.set("order", order);
 		
-		assertEquals("{\"index\":4,\"name\":\"aaaa\"}", table.toJSON());
-		
-		System.out.println(order.toJSON());
+		ObjectMapper mapper = new ObjectMapper();
+		Map map = mapper.readValue(table.toJSON(), Map.class);
+		assertEquals("aaaa", map.get("name"));
+		assertEquals(4, map.get("index"));
+		assertEquals("xxx", map.get("order_id"));
 	}
 	
 	@Test
@@ -40,11 +45,16 @@ public class TestSync {
 		SampleTable table = new SampleTable();
 		table.set("name", "aaaa");
 		table.set("index", 4);
-		table.set("order", new SampleOrder());
+		TableGroup group = new TableGroup();
+		group.set("id", "xxx");
+		table.set("tablegroup", group);
 
+		System.out.println(table.toJSON());
 		manager.loadJSONModel("com.ecolemo.jangorm.test.model.SampleTable", table.toJSON());
 		
-		assertEquals(4, SampleTable.objects(SampleTable.class).get(kv("name", "aaaa")).index);
+		SampleTable loaded = SampleTable.objects(SampleTable.class).get(kv("name", "aaaa"));
+		assertEquals(4, loaded.index);
+		assertEquals("xxx", loaded.get("tablegroup_id"));
 	}
 	
 	

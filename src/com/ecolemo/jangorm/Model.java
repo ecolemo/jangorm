@@ -147,6 +147,8 @@ public class Model extends DataMap {
 				object.put(entry.getKey() + "_id", ((Map) entry.getValue()).get("id"));
 			} else if (entry.getValue() instanceof Date) {
 				object.put(entry.getKey(), DateFormats.plain.format(entry.getValue()));
+			} else if (entry.getValue() == null) {
+				// null pass
 			} else {
 				object.put(entry.getKey(), entry.getValue());
 			}
